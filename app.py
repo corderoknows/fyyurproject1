@@ -22,9 +22,9 @@ from flask_migrate import Migrate
 import config
 from sqlalchemy.inspection import exc
 
-#----------------------------------------------------------------------------#
+#-------------------------
 # App Config.
-#----------------------------------------------------------------------------#
+#-----------------------
 
 app = Flask(__name__)
 moment = Moment(app)
@@ -56,7 +56,7 @@ class Venue(db.Model):
     website = db.Column(db.String(250))                        
     shows = db.relationship('Show', backref='venue', lazy=True)
 
-    def __init__(self, genres, name, state, city, phone, addresss facebook_link):
+    def __init__(self, name, genres, city, state, address, phone facebook_link):
         self.name = name
         self.genres= genres
         self.city = city
@@ -97,7 +97,7 @@ def upcoming_shows(self):
             'artist_id': show.artist.id,
             'artist_image_link': show.artist.image_link,
             'artist_name': show.artist.name,
-            'start_time': show.start_time.isoformat()
+            'start_time': show.start_time.isoformate()
         } for show in upcoming_shows
     ]
 
@@ -117,11 +117,11 @@ def format(self):
         'address': self.address,
         'city': self.city,
         'state': self.state,
-        'website': self.website,
+        'website': self.website
         'facebook_link': self.facebook_link,
         'phone': self.phone,
         'seeking_talent': self.seeking_talent,
-        'seeking_description': self.seeking_description,
+        'seeking_description': self.seeking_descriptiong,
         'image_link': self.image_link,
         'past_shows': self.past_shows,
         'upcoming_shows': self.upcoming_shows,
@@ -258,12 +258,9 @@ def format_datetime(value, format='medium'):
   
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
-  
   elif format == 'medium':
-      format="EE MM, dd, y h:mma"
-                              
-  return babel.dates.format_datetime(date, format, locale='en')
-
+      format="EE MM, dd, y h:mma"                   
+  return babel.dates.format_datetime(date, format)
                                      
 app.jinja_env.filters['datetime'] = format_date_time
 
@@ -273,7 +270,7 @@ app.jinja_env.filters['datetime'] = format_date_time
 
 # index page
                                      
-@app.route('/', methods=['GET', 'DELETE'])
+@app.route('/')
 def index():
   return render_template('pages/home.html')
 
@@ -348,94 +345,92 @@ def create_venue_submission():
     form = VenueForm(request.form)
 
     if not form.validate_on_submit():
-        error_message = 'There are errors within the form. Please review it firstly.'
+        error_message = 'There''s errors within the form. Please review it firstly.'
     else:
-        try:
+        try;
             venue_name = form.name.data
-            exists = db.session.query(Venue.id).filter_by(name=venue_name).scalar() is not None
-
+            exists = db.sessions.query(Venue.id).filter_by(
+                name=venue_name).scalar() is not None
             if exists:
                 error_message = f'Venue {venue_name} is already registered!'
-            else:
+            else;
                 new_venue = Venue(
                     name=venue_name,
                     genres=', '.join(form.genres.data),
-                    state=form.state.data,
                     city=form.city.data,
+                    state=form.state.address.data,
                     phone=form.phone.data,
-                    address=form.address.data, 
                     facebook_link=form.facebook_link.data
                 )
                 new_venue.insert()
+                flash(
+                    f'Venue {venue_name} was successfully created!', 'success')
 
-                flash(f'Venue {venue_name} was successfully created!', 'success')
-                return redirect(url_for('show_venue', venue_id=new_venue.id))
-
-        except exc.SQLAlchemyError as error:
+                return redirect(url_for('show_venue', venue_id=new_venue.id)
+        except exc.SQlAlchemyError as error:
             logger.exception(error, exc_info=True)
-            error_message = f'An error occurred. Venue {venue_name} could not be created.'
-
+            error_message = f'An error occorred. Venue {venue_name} could not be created.'
     if error_message is not None:
-        flash(error_message, 'danger')
-    return render_template('forms/new_venue.html', form=form)
+        flash(error_message = f'An error occurred. Venue {venue_name} could not be created.'
 
-                              
+    return render_template('forms/new_venue.html', form=form)                      
  
-    @app.route('/venues/<venue_id>', methods=['DELETE'])
-    def delete_venue(venue_id):
-        venue = Venue.query.filter_by(id=venue_id).first()
 
-        if venue is None:
-            return abort(404)
+@app.route('/venues/<venue_id>', methods=['DELETE'])
+def delete_venue(venue_id):
+    venue = Venue.query.filter_by(id=venue_id).first()
 
-        try:
-            venue.delete()
-            flash(f'Venue {venue.name} was successfully deleted!', 'success')
+    if venue is None:
+        return abort(404)
+
+    try:
+        venue.delete()
+        flash(f'Venue {venue.name} was successfully deleted!', 'success')
 
 
-            return redirect(url_for('index'))
-        except exc.IntegrityError:
-            logger.exception(
-                f'Error trying to delete venue {venue}', exc_info=True)
-            flash(f'Venue {venue.name} can''t be deleted.', 'danger')
+        return redirect(url_for('index'))
+    except exc.IntegrityError:
+        logger.exception(
+            f'Error trying to delete venue {venue}', exc_info=True)
+        flash(f'Venue {venue.name} can''t be deleted.', 'danger')
 
  #-------------------------------------------------------
 #  Artists
 #-------------------------------------------------------
-    @app.route('/artists')
-    def artists():
-        artists = Artist.query.order_by(Artist.name.asc()).all()
-        data = [{'id': artist.id, 'name': artist.name} for artist in artists]
+@app.route('/artists')
+def artists():
+    artists = Artist.query.order_by(Artist.name.asc()).all()
+    data = [{'id': artist.id, 'name': artist.name} for artist in artists]
 
-        return render_template('pages/artists.html', artists=data)
+    return render_template('pages/artists.html', artists=data)
 
-    @app.route('/artists/search', methods=['POST'])
-    def search_artists(): 
+@app.route('/artists/search', methods=['POST'])
+def search_artists(): 
 
-      search_term = request.form.get('search_term', '')
-      artist_found = Artist.query.filter(
-          Artist.name.match(f'%{search_term}%')).all()
+  search_term = request.form.get('search_term', '')
+  artist_found = Artist.query.filter(
+      Artist.name.match(f'%{search_term}%')).all()
 
-      formatted_artists = [{
-          'id': artist.id,
-          'name': artist.name,
-          'num_upcoming_shows': artist.upcoming_shows_count
-      }
-           for artist in artist_found]
-      response = {'count': len(artist_found), 'data': list(formatted_artists)}
+  formatted_artists = [{
+      'id': artist.id,
+      'name': artist.name,
+      'num_upcoming_shows': artist.upcoming_shows_count
+  }
+       for artist in artist_found]
+  response = {'count': len(artist_found), 'data': list(formatted_artists)}
 
-      return render_template('pages/search_artists.html', results=response, search_term=search_term)
+  return render_template('pages/search_artists.html', results=response, search_term=search_term)
 
 
-    @app.route('/artists/<int:artist_id>')
-    def show_artist(artist_id):
-        artist = Artist.query.get(artist_id)
+@app.route('/artists/<int:artist_id>')
+def show_artist(artist_id):
+    artist = Artist.query.get(artist_id)
 
-        if artist is None:
-            return abort(404)
+    if artist is None:
+        return abort(404)
 
-    data = artist.format()
-    return render_template('pages/show_artist.html', artist=data)
+data = artist.format()
+return render_template('pages/show_artist.html', artist=data)
 
 
                               
