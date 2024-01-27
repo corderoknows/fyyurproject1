@@ -36,14 +36,12 @@ logger = logging.getLogger(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
 
 
-
-
 #-------------------------------------------
 #     Models
 #-------------------------------------------
 
 class Venue(db.Model):
-    __tablename__ = 'venues'
+    __tablename__ = 'venue'
     
     id= db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
@@ -58,14 +56,14 @@ class Venue(db.Model):
     website = db.Column(db.String(250))                        
     shows = db.relationship('Show', backref='venue', lazy=True)
 
-    def __init__(self, name, genres, city, state, address, phone, facebook_link):
+    def __init__(self, genres, name, state, city, phone, addresss facebook_link):
         self.name = name
         self.genres= genres
         self.city = city
         self.state = state
         self.address = address                      
         self.phone = phone
-        self.facebook_link = facebook_link  
+        self.facebook_link = facebook_link
         
     def insert(self):
         db.session.add(self)
@@ -93,8 +91,7 @@ class Venue(db.Model):
 @property
 def upcoming_shows(self):
     upcoming_shows = list(
-        filter(lambda show: show.start_time > datetime.now(), self.shows)
-    )
+        filter(lambda show: show.start_time > datetime.now(), self.shows))
     return [
         {
             'artist_id': show.artist.id,
@@ -136,11 +133,7 @@ def __repr__(self):
 
 def __getitem__(self, key):
     return getattr(self, key)
-
-              
-                              
-                              
-                              
+                               
                               
 class Artist(db.Model):
     """Represents artist data model."""
@@ -222,9 +215,7 @@ def past_shows(self):
        }
     
     def __repr__(self):
-        return f'<Artist name={self.name}, city={self.city}, state={self.state}, genres={self.genres}, past_shows_count={self.past_shows_count}, upcoming_shows_count={self.upcoming_shows}>'
-
-                              
+        return f'<Artist name={self.name}, city={self.city}, state={self.state}, genres={self.genres}, past_shows_count={self.past_shows_count}, upcoming_shows_count={self.upcoming_shows}>'                          
 
                               
 class Show(db.Model):
@@ -288,9 +279,7 @@ def index():
 
 #  ----------------------------------------------------------------
 #  Venues
-#  ----------------------------------------------------------------
-
-                                     
+#  ----------------------------------------------------------------                       
                                      
 @app.route('/venues')
 def venues():
@@ -342,9 +331,7 @@ def show_venue(venue_id):
     
   data = venue.format()
                                      
-  return render_template('pages/show_venue.html', form=formatter)
- 
-                                     
+  return render_template('pages/show_venue.html', form=formatter)                                
 
 #------------------------------------------------------------------
 # Create Venue
@@ -411,8 +398,6 @@ def create_venue_submission():
             logger.exception(
                 f'Error trying to delete venue {venue}', exc_info=True)
             flash(f'Venue {venue.name} can''t be deleted.', 'danger')
-          
-          
 
  #-------------------------------------------------------
 #  Artists
