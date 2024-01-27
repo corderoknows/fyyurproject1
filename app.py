@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
 
-
 #-------------------------------------------
 #     Models
 #-------------------------------------------
@@ -246,12 +245,10 @@ class Show(db.Model):
         }
     def __repr_(self):
         return f'<Show start_time={self.start_time}, venue={self.venue}, artist={self.artist}>' 
-                              
-                              
+                                                        
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
-
                               
 def format_datetime(value, format='medium'):
   date = dateutil.parser.parse(value)
@@ -267,7 +264,6 @@ app.jinja_env.filters['datetime'] = format_date_time
 #----------------------------------------------------------------------------
 # Controllers.
 #----------------------------------------------------------------------------
-
 # index page
                                      
 @app.route('/')
@@ -394,7 +390,7 @@ def delete_venue(venue_id):
             f'Error trying to delete venue {venue}', exc_info=True)
         flash(f'Venue {venue.name} can''t be deleted.', 'danger')
 
- #-------------------------------------------------------
+#-------------------------------------------------------
 #  Artists
 #-------------------------------------------------------
 @app.route('/artists')
